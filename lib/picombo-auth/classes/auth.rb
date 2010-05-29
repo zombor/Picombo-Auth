@@ -11,7 +11,9 @@ module Picombo
 		include Singleton
 
 		def login(user, password)
-			user = Picombo::Models::User.first(:username => user, :password => hash_password(password))
+			field_name = Picombo::Models::User.name_field
+
+			user = Picombo::Models::User.first(field_name => user, :password => Picombo::Auth.hash_password(password))
 
 			if user
 				# set the session as logged in
@@ -40,7 +42,7 @@ module Picombo
 			! Picombo::Session.instance.get('loggedin').nil?
 		end
 
-		def self.hash_password
+		def self.hash_password(password, salt = false)
 			Digest::SHA1.hexdigest(password)
 		end
 	end
