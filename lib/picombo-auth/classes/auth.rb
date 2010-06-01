@@ -17,14 +17,18 @@ module Picombo
 		def login(user, password)
 			field_name = Picombo::Models::User.name_field
 
-			user = Picombo::Models::User.first(field_name => user, :password => Picombo::Auth.hash_password(password))
+			user = Picombo::Models::User.first(field_name => user)
 
 			if user
-				# set the session as logged in
-				Picombo::Session.instance.set('loggedin', true)
-				Picombo::Session.instance.set('user', user)
+				# Find the salt from the existing password, and compare with the provided pass
+				salt = Picombo::Auth.find_salt(user.password)
+				if Picombo::Auth.hash_password(password, salt) == user.password
+					# set the session as logged in
+					Picombo::Session.instance.set('loggedin', true)
+					Picombo::Session.instance.set('user', user)
 
-				return true
+					return true
+				end
 			end
 
 			false
